@@ -1,0 +1,56 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+service bomap {
+    // init
+    rpc Setup (SetupRequest) returns (SetupResponse) {}
+
+    // start
+    rpc init_dummy (BucketMessage) returns (google.protobuf.Empty) {}
+
+    // Read a bucket from the ORAM pool.
+    rpc read_bucket(BucketReadMessage) returns (BucketReadResponse) {}
+
+    // Write a bucket to the ORAM pool.
+    rpc write_bucket(BucketWriteMessage) returns (google.protobuf.Empty) {}
+
+    // Handles communication with the relational database.
+    rpc end_signal(endMessage) returns (google.protobuf.Empty) {}
+}
+
+message SetupRequest {
+    int32 level = 1;
+    int32 maxsize = 2;
+    int32 oramindex = 3;
+    bool is_find = 4;
+}
+
+message SetupResponse {
+    bool res = 1;
+}
+
+message BucketReadMessage {
+    int32 path = 1;
+    int32 oram_index = 2; //leaf = 0, mid2= 1, mid1:2~L-1
+}
+
+message BucketReadResponse {
+    bytes buffer = 1;
+}
+
+message BucketMessage {
+    bytes buffer = 1;
+    int32 position = 2;
+    int32 oram_index = 3;
+}
+
+message BucketWriteMessage {
+    repeated bytes buffer = 1;
+    repeated int32 position = 2;
+    int32 oram_index = 3;
+    int32 num = 4;
+}
+
+message endMessage {
+    string end = 1;
+}
