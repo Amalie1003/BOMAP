@@ -1,4 +1,6 @@
 # README
+## Introduction
+This is the implementation of BOMAP, an oblivious map with constant roundtrips.
 ## Environments and Requirements
 Operating System: Ubuntu 20.04
 - g++ 9.4.0
