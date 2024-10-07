@@ -1,5 +1,5 @@
 #include "client.hpp"
-int L = 4;
+int L = 3;
 int N_pairs = pow(2,10);
 int insert_pairs = 100;
 bool is_access = false;

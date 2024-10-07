@@ -12,7 +12,7 @@ public:
     Bid(int value);
     Bid(std::array< byte_t, ID_SIZE> value);
     Bid(string value);
-    virtual ~Bid();
+    ~Bid();
     Bid operator++ ();
     Bid& operator=(int other);
     bool operator!=(const int rhs) const ;

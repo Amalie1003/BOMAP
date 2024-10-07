@@ -13,7 +13,7 @@
 #include <malloc.h>
 using namespace std;
 
-const int C = 5, P1 = 12, P2 = 12;
+const int C = 8, P1 = 23, P2 = 23;
 extern int L;
 extern bool is_access;
 extern int N_pairs;
@@ -65,11 +65,11 @@ public:
     // 返回值：-1（没有该删除值）；0（删除，保持两个节点）；1（删除，合并节点） 
     int Delete(leafNode &neighbor, int flag, Bid key);
     std::array<kvpair, C> arr;
-    int c;
     Bid old_max; //old max_value to index the element in its parent node
     Bid max_value; 
     int pos;
-    std::array<kppair, C> childMap;
+    int c;
+    // std::array<kppair, C> childMap;
 };
 
 class midNode2
@@ -87,11 +87,11 @@ public:
     int Search(Bid key, Bid& l_key);
     int Search(Bid key, Bid& l_key, int& l_pos, Bid& neighbor, int& n_pos, int& up_right);
     int Delete(midNode2 &neighbor, int left, Bid key);
-    int p2;
+    std::array<kppair, P2> childMap;
     Bid old_max;
     Bid max_value;
-    std::array<kppair, P2> childMap;
     int pos;
+    int p2;
 };
 
 class midNode1
@@ -111,19 +111,19 @@ public:
     void Update(midNode1 &m1);
     int Search(Bid key, Bid& m2_key);
     int Search(Bid key, Bid& m2_key, int& m2_pos, Bid& neighbor, int& n_pos, int& up_right);
-    int p2;
+    std::array<kppair, P2> childMap;
     Bid old_max;
     Bid max_value;
-    std::array<kppair, P2> childMap;
     int pos;
+    int p2;
 };
 
 class rootNode
 {
 public:
-    int p1;
-    Bid max_value;
     std::array<kppair, P1> childMap;
+    Bid max_value;
+    int p1;
     rootNode();
     rootNode(const rootNode& n);
     ~rootNode(){}

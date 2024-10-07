@@ -42,12 +42,16 @@ Bucket DeserialiseBucket(block buffer) {
 }
 
 template<class Node>
-ORAM<Node>::ORAM(int maxSize, int oram_index, mongoConnector* mconnector, bool is_acc)
+ORAM<Node>::ORAM(int maxSize, int oram_index, Connector* mconnector, bool is_acc)
 {
     mc = mconnector;    
     depth = floor(log2(maxSize / Z));
     bucketCount = pow(2, depth + 1) - 1;
     size_t blockSize = sizeof (Node); 
+    cout << "Bid size:" << sizeof(Bid) << "\nkvpair size:" << sizeof(kvpair) << "\narray size:" << sizeof(std::array<kvpair, C>) << "\n";
+    cout << "bucket size:" << blockSize*Z << "\n# of levels:" << depth +1 << "\ntotal bucket: " <<
+    bucketCount << "\ntotal size:" << bucketCount*blockSize*Z/1024/1024 << "MB\n\n";
+
     if(!is_acc)
     {
         size_t clen_size = AES::GetCiphertextLength((blockSize) * Z);

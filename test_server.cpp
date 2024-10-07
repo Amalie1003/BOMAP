@@ -23,7 +23,7 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
 
-ABSL_FLAG(uint16_t, port, 1123, "Server port for the service");
+// ABSL_FLAG(uint16_t, port, 1123, "Server port for the service");
 
 bool is_find = false;
 std::chrono::duration<double> server_time(0);
@@ -40,13 +40,13 @@ class GreeterServiceImpl final : public bomap::Service {
     {
       case 0:
       {
-        std::cout << "begin Write [leafnode] " << len << " bits to: " << request->position() << std::endl;
+        // std::cout << "begin Write [leafnode] " << len << " bits to: " << request->position() << std::endl;
         oram3->InitBucket(0, request->position(), temp);
         break;
       }
       case 1:
       {
-        std::cout << "begin Write [midNode2] " << len << " bits to: " << request->position() << std::endl;
+        // std::cout << "begin Write [midNode2] " << len << " bits to: " << request->position() << std::endl;
         oram2->InitBucket(1, request->position(), temp);
         break;
       }
@@ -57,7 +57,7 @@ class GreeterServiceImpl final : public bomap::Service {
           mc->Insert(level - 1, 0, request->buffer());
           break;
         }
-        std::cout << "begin Write [midNode1] " << len << " bits to: " << request->position() << std::endl;
+        // std::cout << "begin Write [midNode1] " << len << " bits to: " << request->position() << std::endl;
         oram1[request->oram_index() - 2].InitBucket(request->oram_index(), request->position(), temp);
         break;
       }
@@ -80,7 +80,7 @@ class GreeterServiceImpl final : public bomap::Service {
         }
         oram3->FetchPath(0, result, request->path());
         int len = result.length();
-        std::cout << " read [leafNode] " << request->path() << " bits: " << len << std::endl;
+        // std::cout << " read [leafNode] " << request->path() << " bits: " << len << std::endl;
         recv_count3++;      
         break;
       }
@@ -93,7 +93,7 @@ class GreeterServiceImpl final : public bomap::Service {
         
         oram2->FetchPath(1, result, request->path());
         int len = result.length();
-        std::cout << " read [midNode2] " << request->path() << " bits: " << len << std::endl;
+        // std::cout << " read [midNode2] " << request->path() << " bits: " << len << std::endl;
         recv_count2++;
         break;
       }
@@ -111,7 +111,7 @@ class GreeterServiceImpl final : public bomap::Service {
         }
         oram1[index].FetchPath(request->oram_index(), result, request->path());
         int len = result.length();
-        std::cout << " read [midNode1] " << request->path() << " -- " << index << " bits: " << len << std::endl;
+        // std::cout << " read [midNode1] " << request->path() << " -- " << index << " bits: " << len << std::endl;
         recv_count1[index]++;
         break;
       }
@@ -201,7 +201,7 @@ class GreeterServiceImpl final : public bomap::Service {
         level = request->level();
         is_find = request->is_find();
         if(init == false) {
-          mc = new mongoConnector("mongodb://localhost:27017", level, std::to_string(int(log2(N_pairs))), is_find);
+          mc = new Connector("mongodb://localhost:27017", level, std::to_string(int(log2(N_pairs))), is_find);
           init = true;
         }
         switch (request->oramindex())
@@ -233,7 +233,7 @@ class GreeterServiceImpl final : public bomap::Service {
 
 
 private:
-  mongoConnector* mc;
+  Connector* mc;
   std::vector<ORAM<midNode1>> oram1;
   // ORAM<midNode2> oram2;
   std::unique_ptr<ORAM<leafNode>> oram3;
@@ -246,8 +246,8 @@ private:
   bool init = false;
 };
 
-void RunServer(uint16_t port) {
-  std::string server_address = absl::StrFormat("0.0.0.0:%d", port);
+void RunServer() {
+  std::string server_address = "0.0.0.0:1123";
   GreeterServiceImpl service;
 
   grpc::EnableDefaultHealthCheckService(true);
@@ -268,7 +268,7 @@ void RunServer(uint16_t port) {
 }
 
 int main(int argc, char** argv) {
-  absl::ParseCommandLine(argc, argv);
-  RunServer(absl::GetFlag(FLAGS_port));
+  // absl::ParseCommandLine(argc, argv);
+  RunServer(/*absl::GetFlag(FLAGS_port)*/);
   return 0;
 }

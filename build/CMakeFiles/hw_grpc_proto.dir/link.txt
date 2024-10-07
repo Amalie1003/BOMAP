@@ -1,0 +1,2 @@
+/usr/bin/ar qc libhw_grpc_proto.a  CMakeFiles/hw_grpc_proto.dir/bomap.grpc.pb.cc.o CMakeFiles/hw_grpc_proto.dir/bomap.pb.cc.o CMakeFiles/hw_grpc_proto.dir/src/AES.cpp.o CMakeFiles/hw_grpc_proto.dir/src/Bid.cpp.o CMakeFiles/hw_grpc_proto.dir/src/Connector.cpp.o CMakeFiles/hw_grpc_proto.dir/src/ORAM.cpp.o CMakeFiles/hw_grpc_proto.dir/src/client.cpp.o CMakeFiles/hw_grpc_proto.dir/src/node.cpp.o CMakeFiles/hw_grpc_proto.dir/src/precompute.cpp.o
+/usr/bin/ranlib libhw_grpc_proto.a

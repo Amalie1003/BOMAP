@@ -11,7 +11,7 @@
 #include <set>
 #include <bits/stdc++.h>
 #include "node.hpp"
-#include "mongoConnector.hpp"
+#include "Connector.hpp"
 
 
 using namespace std;
@@ -30,7 +30,7 @@ private:
     block SerialiseBucket(Bucket bucket);
 public:
     ORAM(){};
-    ORAM(int maxSize, int oram_index, mongoConnector* mc, bool is_acc);
+    ORAM(int maxSize, int oram_index, Connector* mc, bool is_acc);
     ~ORAM();
  
     void start();
@@ -40,7 +40,7 @@ public:
     void bulkInitBucket(int oram_index, vector<int> pos, vector<std::string> bucket);
     bytes<Key> key;
     std::vector<int> readviewmap;
-    mongoConnector* mc;
+    Connector* mc;
 };
 
 #endif 
