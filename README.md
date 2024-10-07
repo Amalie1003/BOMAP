@@ -1,9 +1,8 @@
-# BOMAP
-不经意键值存储的实现项目。
-## 编译环境
-操作系统：Ubuntu
-
-编译需要的相关库：
+# README
+## Introduction
+This is the implementation of BOMAP, an oblivious map with constant roundtrips.
+## Environments and Requirements
+Operating System: Ubuntu 20.04
 - g++ 9.4.0
 - cmake 3.25.3
 - openssl 1.1.1
@@ -35,5 +34,4 @@ make
 ./test_server
 ./test_bomap
 ```
-
-
+Or you can check `test.sh`.
