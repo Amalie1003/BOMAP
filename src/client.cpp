@@ -6,6 +6,11 @@ bool is_access = false;
 size_t write_communication_size = 0, read_communication_size = 0;
 double_t mean_write_communication_size = 0, mean_read_communication_size = 0;
 std::chrono::duration<double> write_communication_time(0), read_communication_time(0);
+std::chrono::duration<double> random_path_time(0), mean_random_path_time(0);
+std::chrono::duration<double> deserial_dec_time(0), mean_deserial_dec_time(0);
+std::chrono::duration<double> serial_enc_time(0), mean_serial_enc_time(0);
+std::chrono::duration<double> insert_time(0), mean_insert_time(0);
+
 std::chrono::duration<double> mean_write_communication_time(0), mean_read_communication_time(0);
 
 client::client(int maxSize, vector<bytes<Key>> k1): rd(), mt(rd()), 
@@ -54,6 +59,8 @@ void client::insert_map(Bid key, int value)
     write_communication_size = 0;
     read_communication_time = std::chrono::milliseconds(0);
     write_communication_time = std::chrono::milliseconds(0);
+    serial_enc_time = std::chrono::milliseconds(0);
+    deserial_dec_time = std::chrono::milliseconds(0);
     auto begin = std::chrono::high_resolution_clock::now();
 
     part_init();
@@ -68,6 +75,8 @@ void client::insert_map(Bid key, int value)
     mean_read_communication_time += read_communication_time/insert_pairs;
     mean_write_communication_size += (double_t)write_communication_size/insert_pairs;
     mean_write_communication_time += write_communication_time/insert_pairs;
+    mean_deserial_dec_time += deserial_dec_time/insert_pairs;
+    mean_serial_enc_time += serial_enc_time/insert_pairs;
 }
 
 bool client::delete_map(Bid key)
@@ -344,7 +353,8 @@ bool client::insert(Bid key, int value)
     ReadleafNode(l, l_key, l_pos);
     if(leafcache.count(l_key) != 0) leafcache.erase(l_key);
 
-
+    // begin insert
+    auto begin = std::chrono::high_resolution_clock::now();
     leafNode newNode;
     newNode.pos = leafRandomPos();
     l.Insert(newNode, key, value);
@@ -428,6 +438,9 @@ bool client::insert(Bid key, int value)
         }
         Writemid2Node(true, m2.max_value, m2);
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    insert_time = end-begin;
+    mean_insert_time += insert_time/insert_pairs;
     return true;
 }
 
@@ -739,6 +752,7 @@ void client::finish(bool find)
     finalizemid2(find);
     finalizeleaf(find);
     
+    auto begin = std::chrono::high_resolution_clock::now();
     for (auto &t : leafcache) {
         if (t.second.c != 0) {
             leafNode& tmp = t.second;
@@ -865,6 +879,9 @@ void client::finish(bool find)
             }
         }
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    mean_random_path_time += (end-begin)/insert_pairs;
+
     #if debug
     
     #endif
@@ -1201,6 +1218,7 @@ void client::Fetchmid1Path(int leaf, int mid1L)
     #if debug
     cout << "[mid1]receive mid1oram bits:" << len << std::endl;
     #endif
+    auto be = std::chrono::high_resolution_clock::now();
     int i = 0;
     int blockSize = sizeof(midNode1) * Z;
     int clen = AES::GetCiphertextLength(blockSize);
@@ -1234,6 +1252,8 @@ void client::Fetchmid1Path(int leaf, int mid1L)
         }
         i++;
     }
+    auto en = std::chrono::high_resolution_clock::now();
+    deserial_dec_time += en-be;
 }
 
 void client::Fetchmid2Path(int leaf)
@@ -1265,7 +1285,7 @@ void client::Fetchmid2Path(int leaf)
     #if debug
     cout << "[mid2]receive mid2oram bits:" << len << std::endl;
     #endif
-
+    auto be = std::chrono::high_resolution_clock::now();
     int i = 0;
     int blockSize = sizeof(midNode2) * Z;
     int clen = AES::GetCiphertextLength(blockSize);
@@ -1294,6 +1314,8 @@ void client::Fetchmid2Path(int leaf)
         }
         i++;
     }
+    auto en = std::chrono::high_resolution_clock::now();
+    deserial_dec_time += en-be;
 }
 
 void client::FetchleafPath(int leaf)
@@ -1324,6 +1346,7 @@ void client::FetchleafPath(int leaf)
     #if debug
         cout << "[leaf]receive leaforam bits:" << len << std::endl;
     #endif
+    auto be = std::chrono::high_resolution_clock::now();
     size_t i = 0;
     size_t blockSize = sizeof(leafNode) * Z;
     size_t clen = AES::GetCiphertextLength(blockSize);
@@ -1354,6 +1377,8 @@ void client::FetchleafPath(int leaf)
         }
         i++;
     }
+    auto en = std::chrono::high_resolution_clock::now();
+    deserial_dec_time += en- be;
 }
 
 std::string client::Writemid1Path(int leaf, int d, int mid1L)
@@ -1661,7 +1686,7 @@ block client::SerialiseBucket(Bucket bucket) {
 
 void client::finalize2mid1(int mid1L)
 {
-    
+    auto be = std::chrono::high_resolution_clock::now();
     int depth = floor(log2(2 * P1 *pow(P2,mid1L)/ Z));
     int cnt = 0;
     std::vector<std::string> buffer_vec;
@@ -1681,6 +1706,8 @@ void client::finalize2mid1(int mid1L)
             }
         }
     }
+    auto en = std::chrono::high_resolution_clock::now();
+    serial_enc_time += en-be;
     auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = write_bucket(buffer_vec, position_vec, mid1L+2); 
     auto end = std::chrono::high_resolution_clock::now();
@@ -1703,6 +1730,7 @@ void client::finalize2mid1(int mid1L)
 
 void client::finalize2mid2()
 {
+    auto be = std::chrono::high_resolution_clock::now();
     int depth = floor(log2(2 * P1 * pow(P2,L-3) / Z));
     int cnt = 0;
     std::vector<std::string> buffer_vec;
@@ -1722,6 +1750,8 @@ void client::finalize2mid2()
             }
         }
     }
+    auto en = std::chrono::high_resolution_clock::now();
+    serial_enc_time += en-be;
     auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = write_bucket(buffer_vec, position_vec, 1);
     auto end = std::chrono::high_resolution_clock::now();
@@ -1744,6 +1774,7 @@ void client::finalize2mid2()
 
 void client::finalize2leaf()
 {
+    auto be = std::chrono::high_resolution_clock::now();
     int depth = floor(log2(2 * P1 * pow(P2,L-2)  / Z));
     int cnt = 0;
     std::vector<std::string> buffer_vec;
@@ -1763,6 +1794,8 @@ void client::finalize2leaf()
             }
         }
     }
+    auto en = std::chrono::high_resolution_clock::now();
+    serial_enc_time += en - be;
     auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = write_bucket(buffer_vec, position_vec, 0);
     auto end = std::chrono::high_resolution_clock::now();

@@ -39,12 +39,17 @@ int main()
         i++;
 		if(i == insert_pairs) break;
     }
-	cout << mean_read_communication_time.count() << ",";
-	cout << mean_read_communication_size << ",";
-	cout << mean_write_communication_time.count() << ",";
-	cout << mean_write_communication_size << ",";
-	cout << end_to_end_time.count() << ",";
-	cout << end_to_end_time.count()-mean_read_communication_time.count()-mean_write_communication_time.count() << std::endl;
+	cout << "读-通信时间：" << mean_read_communication_time.count() << "\n";
+	cout << "读-通信量：" << mean_read_communication_size << "\n";
+	cout << "写-通信时间：" << mean_write_communication_time.count() << "\n";
+	cout << "写-通信量：" << mean_write_communication_size << "\n";
+	cout << "端到端时间：" << end_to_end_time.count() << "\n";
+	cout << "客户端处理时间：" << end_to_end_time.count()-mean_read_communication_time.count()-mean_write_communication_time.count() << "\n"; 
+	cout << "随机重分配地址时间：" << mean_random_path_time.count() << "\n";
+	cout << "解密+反序列化时间：" << mean_deserial_dec_time.count() << "\n";
+	cout << "客户端纯插入时间：" << mean_insert_time.count() << "\n";
+	cout << "加密+序列化时间：" << mean_serial_enc_time.count() << "\n";
+	cout << std::endl;
 	/*
 	Bid del_key = 100;
 	std::cout << "begin search : " << del_key << "--- ";

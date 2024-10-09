@@ -42,6 +42,10 @@ using namespace std;
 #define debug_randompos 0
 extern size_t write_communication_size, read_communication_size;
 extern double_t mean_write_communication_size, mean_read_communication_size;
+extern std::chrono::duration<double> random_path_time, mean_random_path_time;
+extern std::chrono::duration<double> deserial_dec_time, mean_deserial_dec_time;
+extern std::chrono::duration<double> serial_enc_time, mean_serial_enc_time;
+extern std::chrono::duration<double> insert_time, mean_insert_time;
 extern std::chrono::duration<double> write_communication_time, read_communication_time, mean_write_communication_time, mean_read_communication_time;
 
 class client
