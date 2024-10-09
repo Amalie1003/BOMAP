@@ -26,16 +26,26 @@ int main()
 	std::cout<<"init finished!"<<std::endl;
 	// insert
     int i = 0;	
+	std::chrono::duration<double> end_to_end_time(0);
     while (true) 
     {
         Bid key = i + 1;
 		int value = i + 1;
 		std::cout << "begin insert (" << key << "," << value << ")" << std::endl;
+		auto be = std::chrono::high_resolution_clock::now();
 		my_client.insert_map(key, value);
+		auto en = std::chrono::high_resolution_clock::now();
+		end_to_end_time += (en-be)/insert_pairs;
         i++;
 		if(i == insert_pairs) break;
     }
-
+	cout << mean_read_communication_time.count() << ",";
+	cout << mean_read_communication_size << ",";
+	cout << mean_write_communication_time.count() << ",";
+	cout << mean_write_communication_size << ",";
+	cout << end_to_end_time.count() << ",";
+	cout << end_to_end_time.count()-mean_read_communication_time.count()-mean_write_communication_time.count() << std::endl;
+	/*
 	Bid del_key = 100;
 	std::cout << "begin search : " << del_key << "--- ";
 	int ret = my_client.search_map(del_key);
@@ -47,6 +57,7 @@ int main()
 	std::cout << "begin search : " << del_key << "--- ";
 	int ret_2 = my_client.search_map(del_key);
 	std::cout << ret_2 << std::endl;
+	*/
 		
 
 	my_client.sendend();

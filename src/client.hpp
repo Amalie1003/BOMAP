@@ -40,8 +40,9 @@ using namespace std;
 
 #define debug 0
 #define debug_randompos 0
-
-
+extern size_t write_communication_size, read_communication_size;
+extern double_t mean_write_communication_size, mean_read_communication_size;
+extern std::chrono::duration<double> write_communication_time, read_communication_time, mean_write_communication_time, mean_read_communication_time;
 
 class client
 {

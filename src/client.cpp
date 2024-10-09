@@ -1,8 +1,12 @@
 #include "client.hpp"
 int L = 3;
 int N_pairs = pow(2,10);
-int insert_pairs = 100;
+int insert_pairs = N_pairs;
 bool is_access = false;
+size_t write_communication_size = 0, read_communication_size = 0;
+double_t mean_write_communication_size = 0, mean_read_communication_size = 0;
+std::chrono::duration<double> write_communication_time(0), read_communication_time(0);
+std::chrono::duration<double> mean_write_communication_time(0), mean_read_communication_time(0);
 
 client::client(int maxSize, vector<bytes<Key>> k1): rd(), mt(rd()), 
     dis(0, pow(2, floor(log2(maxSize / Z))) - 1),mid1cache(L-3),mid1modified(L-3), leafList1(L-3),
@@ -46,11 +50,24 @@ int client::search_map(Bid key)
 
 void client::insert_map(Bid key, int value)
 {
+    read_communication_size = 0;
+    write_communication_size = 0;
+    read_communication_time = std::chrono::milliseconds(0);
+    write_communication_time = std::chrono::milliseconds(0);
+    auto begin = std::chrono::high_resolution_clock::now();
+
     part_init();
     
     insert(key, value);
+    size_t read1_size = read_communication_size;
     
     finish(false);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    mean_read_communication_size += (double_t)read_communication_size/insert_pairs;
+    mean_read_communication_time += read_communication_time/insert_pairs;
+    mean_write_communication_size += (double_t)write_communication_size/insert_pairs;
+    mean_write_communication_time += write_communication_time/insert_pairs;
 }
 
 bool client::delete_map(Bid key)
@@ -1072,7 +1089,11 @@ void client::WriteRootNode()
     buffer_vec.push_back(buffer);
     std::vector<int32_t> p;
     p.push_back(0);
+    auto begin = std::chrono::high_resolution_clock::now();
     write_bucket(buffer_vec, p, L-1);
+    auto end = std::chrono::high_resolution_clock::now();
+    write_communication_time += end - begin;
+    write_communication_size += buffer.length();      
 }
 
 int client::Writemid1Node(bool incache, Bid bid, midNode1 &node, int mid1L) {
@@ -1155,8 +1176,12 @@ void client::Fetchmid1Path(int leaf, int mid1L)
     readCntmid1[mid1L]++;
     
     
-    
+    auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = read_bucket(leaf, mid1L + 2);
+    auto end = std::chrono::high_resolution_clock::now();
+    read_communication_time += end - begin;
+    read_communication_size += reply.length();
+
     #if debug 
     std::cout << "[mid1]send and fetch mid1path:" << leaf << ", mid1L= " << mid1L << std::endl;
     #endif
@@ -1215,8 +1240,12 @@ void client::Fetchmid2Path(int leaf)
 {
     readCntmid2++;
     
+    auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = read_bucket(leaf, 1);
-    
+    auto end = std::chrono::high_resolution_clock::now();
+    read_communication_time += end - begin;
+    read_communication_size += reply.length();
+
     #if debug
         cout << "[mid2]send and fetch mid2path:" << leaf << std::endl; 
     #endif
@@ -1271,7 +1300,12 @@ void client::FetchleafPath(int leaf)
 {
     readCntleaf++;
     
+    auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = read_bucket(leaf, 0);
+    auto end = std::chrono::high_resolution_clock::now();
+    read_communication_time += end - begin;
+    read_communication_size += reply.length();
+
     #if debug
     cout << "[leaf]send and fetch leafpath:" << leaf << std::endl; 
     #endif
@@ -1647,7 +1681,14 @@ void client::finalize2mid1(int mid1L)
             }
         }
     }
-    std::string reply = write_bucket(buffer_vec, position_vec, mid1L+2);       
+    auto begin = std::chrono::high_resolution_clock::now();
+    std::string reply = write_bucket(buffer_vec, position_vec, mid1L+2); 
+    auto end = std::chrono::high_resolution_clock::now();
+    write_communication_time += end - begin;
+    for(int i = 0; i < buffer_vec.size(); i++)
+    {
+        write_communication_size += buffer_vec[i].length();
+    }
     
     if(reply == "ok") 
     {
@@ -1681,7 +1722,14 @@ void client::finalize2mid2()
             }
         }
     }
-    std::string reply = write_bucket(buffer_vec, position_vec, 1);     
+    auto begin = std::chrono::high_resolution_clock::now();
+    std::string reply = write_bucket(buffer_vec, position_vec, 1);
+    auto end = std::chrono::high_resolution_clock::now();
+    write_communication_time += end - begin;
+    for(int i = 0; i < buffer_vec.size(); i++)
+    {
+        write_communication_size += buffer_vec[i].length();
+    }
     
     if(reply == "ok") 
     {
@@ -1715,7 +1763,15 @@ void client::finalize2leaf()
             }
         }
     }
+    auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = write_bucket(buffer_vec, position_vec, 0);
+    auto end = std::chrono::high_resolution_clock::now();
+    write_communication_time += end - begin;
+    for(int i = 0; i < buffer_vec.size(); i++)
+    {
+        write_communication_size += buffer_vec[i].length();
+    }
+
     if(reply == "ok") 
     {
         #if debug
