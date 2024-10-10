@@ -1220,8 +1220,8 @@ void client::Fetchmid1Path(int leaf, int mid1L)
     #endif
     auto be = std::chrono::high_resolution_clock::now();
     int i = 0;
-    int blockSize = sizeof(midNode1) * Z;
-    int clen = AES::GetCiphertextLength(blockSize);
+    int blockSize = sizeof(midNode1);
+    int clen = AES::GetCiphertextLength(blockSize*Z);
     while (i * (clen + 16) < len)
     {
         
@@ -1229,25 +1229,24 @@ void client::Fetchmid1Path(int leaf, int mid1L)
         block ciphertext;
         ciphertext.insert(ciphertext.end(), reply.begin() + i * (clen + 16), reply.begin() + (i + 1) * (clen + 16));
         block buffer = AES::Decrypt(key1[mid1L+2], ciphertext, clen);
-        Bucket bucket = DeserialiseBucket<midNode1>(buffer, mid1L);
+        // Bucket bucket = DeserialiseBucket<midNode1>(buffer, mid1L);
+        Bucket bucket;
 
         for (int z = 0; z < Z; z++) {
             Block &block = bucket[z];
-
-            if (block.id != 0) { 
-                 
-                
-                
-                
-                
-                midNode1 n(mid1L);
-                convertBlockToNode<midNode1>(n, block.data, mid1L);
-                if (mid1cache[mid1L].count(block.id) == 0) {
-                    mid1cache[mid1L][block.id] = n;
+            block.data.assign(buffer.begin(), buffer.begin() + blockSize);
+            midNode1 node(mid1L);
+            convertBlockToNode<midNode1>(node, block.data, mid1L);
+            block.id = node.max_value;           
+            buffer.erase(buffer.begin(), buffer.begin() + blockSize);
+            if(block.id != 0)
+            {
+                // if (mid1cache[mid1L].count(block.id) == 0) {
+                    mid1cache[mid1L][block.id] = node;
                     
-                } else {
+                // } else {
                     
-                }
+                // }
             }
         }
         i++;
@@ -1287,8 +1286,8 @@ void client::Fetchmid2Path(int leaf)
     #endif
     auto be = std::chrono::high_resolution_clock::now();
     int i = 0;
-    int blockSize = sizeof(midNode2) * Z;
-    int clen = AES::GetCiphertextLength(blockSize);
+    int blockSize = sizeof(midNode2);
+    int clen = AES::GetCiphertextLength(blockSize*Z);
     while (i * (clen + 16) < len)
     {
         
@@ -1296,20 +1295,24 @@ void client::Fetchmid2Path(int leaf)
         block ciphertext;
         ciphertext.insert(ciphertext.end(), reply.begin() + i * (clen + 16), reply.begin() + (i + 1) * (clen + 16));
         block buffer = AES::Decrypt(key1[1], ciphertext, clen);
-        Bucket bucket = DeserialiseBucket<midNode2>(buffer);
+        // Bucket bucket = DeserialiseBucket<midNode2>(buffer);
+        Bucket bucket;
 
         for (int z = 0; z < Z; z++) {
             Block &block = bucket[z];
-
-            if (block.id != 0) { 
-                midNode2 n;
-                convertBlockToNode<midNode2>(n, block.data);
-                if (mid2cache.count(block.id) == 0) {
-                    mid2cache[block.id] = n;
+            block.data.assign(buffer.begin(), buffer.begin() + blockSize);
+            midNode2 node;
+            convertBlockToNode<midNode2>(node, block.data);
+            block.id = node.max_value;           
+            buffer.erase(buffer.begin(), buffer.begin() + blockSize);
+            if(block.id != 0)
+            {
+                // if (mid2cache.count(block.id) == 0) {
+                    mid2cache[block.id] = node;
                     
-                } else {
+                // } else {
                     
-                }
+                // }
             }
         }
         i++;
@@ -1348,8 +1351,8 @@ void client::FetchleafPath(int leaf)
     #endif
     auto be = std::chrono::high_resolution_clock::now();
     size_t i = 0;
-    size_t blockSize = sizeof(leafNode) * Z;
-    size_t clen = AES::GetCiphertextLength(blockSize);
+    size_t blockSize = sizeof(leafNode);
+    size_t clen = AES::GetCiphertextLength(blockSize*Z);
     while (i * (clen + 16) < len)
     {
         
@@ -1359,20 +1362,24 @@ void client::FetchleafPath(int leaf)
         
         block buffer = AES::Decrypt(key1[0], ciphertext, clen);
         
-        Bucket bucket = DeserialiseBucket<leafNode>(buffer);
+        // Bucket bucket = DeserialiseBucket<leafNode>(buffer);
+        Bucket bucket;
 
         for (int z = 0; z < Z; z++) {
             Block &block = bucket[z];
-
-            if (block.id != 0) { 
-                leafNode n;
-                convertBlockToNode<leafNode>(n, block.data);
-                if (leafcache.count(block.id) == 0) {
-                    leafcache[block.id] = n;
+            block.data.assign(buffer.begin(), buffer.begin() + blockSize);
+            leafNode node;
+            convertBlockToNode<leafNode>(node, block.data);
+            block.id = node.max_value;           
+            buffer.erase(buffer.begin(), buffer.begin() + blockSize);
+            if(block.id != 0)
+            {
+                // if (leafcache.count(block.id) == 0) {
+                    leafcache[block.id] = node;
                     
-                } else {
+                // } else {
                     
-                }
+                // }
             }
         }
         i++;

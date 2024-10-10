@@ -50,12 +50,12 @@ int main()
 	cout << "客户端纯插入时间：" << mean_insert_time.count() << "\n";
 	cout << "加密+序列化时间：" << mean_serial_enc_time.count() << "\n";
 	cout << std::endl;
-	/*
+	
 	Bid del_key = 100;
 	std::cout << "begin search : " << del_key << "--- ";
 	int ret = my_client.search_map(del_key);
 	std::cout << ret << std::endl;
-
+	/*
 	std::cout << "begin delete (" << del_key << ")" << std::endl;
 	my_client.delete_map(del_key);	
     
