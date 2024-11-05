@@ -2,6 +2,7 @@
 #define BID_H
 #include "Types.hpp"
 #include <iostream>
+#include <functional>
 #include <array>
 using namespace std;
 
@@ -33,6 +34,15 @@ struct Block {
 };
 
 using Bucket = std::array<Block, Z>;
+
+namespace std {
+    template <>
+    struct hash<Bid> {
+        size_t operator()(const Bid& b) const {
+            return hash<string>()(std::string(b.id.begin(), b.id.end())); // 哈希逻辑
+        }
+    };
+}
 
 #endif /* BID_H */
 

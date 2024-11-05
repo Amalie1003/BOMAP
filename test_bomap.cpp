@@ -31,7 +31,7 @@ int main()
     {
         Bid key = i + 1;
 		int value = i + 1;
-		std::cout << "begin insert (" << key << "," << value << ")" << std::endl;
+		// std::cout << "begin insert (" << key << "," << value << ")" << std::endl;
 		auto be = std::chrono::high_resolution_clock::now();
 		my_client.insert_map(key, value);
 		auto en = std::chrono::high_resolution_clock::now();
@@ -46,9 +46,11 @@ int main()
 	cout << "端到端时间：" << end_to_end_time.count() << "\n";
 	cout << "客户端处理时间：" << end_to_end_time.count()-mean_read_communication_time.count()-mean_write_communication_time.count() << "\n"; 
 	cout << "随机重分配地址时间：" << mean_random_path_time.count() << "\n";
-	cout << "解密+反序列化时间：" << mean_deserial_dec_time.count() << "\n";
-	cout << "客户端纯插入时间：" << mean_insert_time.count() << "\n";
-	cout << "加密+序列化时间：" << mean_serial_enc_time.count() << "\n";
+	cout << "解密时间：" << mean_dec_time.count() << "\n";
+	cout << "反序列化时间：" << mean_deserial_time.count() << "\n";
+	// cout << "客户端纯插入时间：" << mean_insert_time.count() << "\n";
+	cout << "加密时间：" << mean_enc_time.count() << "\n";
+	cout << "序列化时间：" << mean_serial_time.count() << "\n";
 	cout << std::endl;
 	
 	Bid del_key = 100;

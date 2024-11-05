@@ -6,5 +6,5 @@ CXX_FLAGS =  -O0 -Wall -g2 -ggdb --std=c++17
 
 CXX_DEFINES = -DBOOST_ALL_NO_LIB -DCARES_STATICLIB
 
-CXX_INCLUDES = -I/home/wrx/BOMAP/build -isystem /usr/local/include/bsoncxx/v_noabi -isystem /usr/local/include/mongocxx/v_noabi 
+CXX_INCLUDES = -I/home/wrx/BOMAP/build -I/home/wrx/BOMAP/include -isystem /usr/local/include/bsoncxx/v_noabi -isystem /usr/local/include/mongocxx/v_noabi 
 

@@ -1,8 +1,10 @@
 #ifndef _CLIENT_H_
 #define _CLIENT_H_
 #include <map>
+#include <unordered_map>
 #include <string>
 #include <set>
+#include <unordered_set>
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
@@ -23,6 +25,8 @@
 #include <vector>
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 #include <grpcpp/grpcpp.h>
 
@@ -43,8 +47,10 @@ using namespace std;
 extern size_t write_communication_size, read_communication_size;
 extern double_t mean_write_communication_size, mean_read_communication_size;
 extern std::chrono::duration<double> random_path_time, mean_random_path_time;
-extern std::chrono::duration<double> deserial_dec_time, mean_deserial_dec_time;
-extern std::chrono::duration<double> serial_enc_time, mean_serial_enc_time;
+extern std::chrono::duration<double> deserial_time, mean_deserial_time;
+extern std::chrono::duration<double> serial_time, mean_serial_time;
+extern std::chrono::duration<double> dec_time, mean_dec_time;
+extern std::chrono::duration<double> enc_time, mean_enc_time;
 extern std::chrono::duration<double> insert_time, mean_insert_time;
 extern std::chrono::duration<double> write_communication_time, read_communication_time, mean_write_communication_time, mean_read_communication_time;
 
@@ -124,21 +130,21 @@ public:
     rootNode root;
     
     
-    std::vector<std::map<Bid, midNode1>>  mid1cache;
-    std::map<Bid, midNode2> mid2cache;
-    std::map<Bid, leafNode> leafcache;
+    std::vector<std::unordered_map<Bid, midNode1>>  mid1cache;  // search, insert and delete
+    std::unordered_map<Bid, midNode2> mid2cache;
+    std::unordered_map<Bid, leafNode> leafcache;
     
-    std::vector<set<Bid>> mid1modified;
-    std::set<Bid> mid2modified;
-    std::set<Bid> leafmodified;
+    std::vector<unordered_set<Bid>> mid1modified;
+    std::unordered_set<Bid> mid2modified;    // search and insert
+    std::unordered_set<Bid> leafmodified;
     
-    std::vector<vector<int>> leafList1;
-    std::vector<int> leafList2;
-    std::vector<int> leafList3;
+    std::vector<unordered_set<int>> leafList1;   //search and insert
+    std::unordered_set<int> leafList2;
+    std::unordered_set<int> leafList3;
     
-    std::vector<vector<int>> writeviewmap1;
-    std::vector<int> writeviewmap2;
-    std::vector<int> writeviewmap3;
+    std::vector<unordered_set<int>> writeviewmap1;  // search and insert
+    std::unordered_set<int> writeviewmap2;
+    std::unordered_set<int> writeviewmap3;
     
     vector<bytes<Key>> key1;
     

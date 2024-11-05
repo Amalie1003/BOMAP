@@ -30,6 +30,7 @@ add_custom_command(
 
 # Include generated *.pb.h files
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+include_directories("${CMAKE_SOURCE_DIR}/include")
 
 file(GLOB_RECURSE ALL_LIB_SRC
   src/*.cpp

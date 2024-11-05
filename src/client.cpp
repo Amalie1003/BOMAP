@@ -7,8 +7,10 @@ size_t write_communication_size = 0, read_communication_size = 0;
 double_t mean_write_communication_size = 0, mean_read_communication_size = 0;
 std::chrono::duration<double> write_communication_time(0), read_communication_time(0);
 std::chrono::duration<double> random_path_time(0), mean_random_path_time(0);
-std::chrono::duration<double> deserial_dec_time(0), mean_deserial_dec_time(0);
-std::chrono::duration<double> serial_enc_time(0), mean_serial_enc_time(0);
+std::chrono::duration<double> deserial_time(0), mean_deserial_time(0);
+std::chrono::duration<double> serial_time(0), mean_serial_time(0);
+std::chrono::duration<double> dec_time(0), mean_dec_time(0);
+std::chrono::duration<double> enc_time(0), mean_enc_time(0);
 std::chrono::duration<double> insert_time(0), mean_insert_time(0);
 
 std::chrono::duration<double> mean_write_communication_time(0), mean_read_communication_time(0);
@@ -59,8 +61,10 @@ void client::insert_map(Bid key, int value)
     write_communication_size = 0;
     read_communication_time = std::chrono::milliseconds(0);
     write_communication_time = std::chrono::milliseconds(0);
-    serial_enc_time = std::chrono::milliseconds(0);
-    deserial_dec_time = std::chrono::milliseconds(0);
+    enc_time = std::chrono::milliseconds(0);
+    dec_time = std::chrono::milliseconds(0);
+    serial_time = std::chrono::milliseconds(0);
+    deserial_time = std::chrono::milliseconds(0);
     auto begin = std::chrono::high_resolution_clock::now();
 
     part_init();
@@ -75,8 +79,10 @@ void client::insert_map(Bid key, int value)
     mean_read_communication_time += read_communication_time/insert_pairs;
     mean_write_communication_size += (double_t)write_communication_size/insert_pairs;
     mean_write_communication_time += write_communication_time/insert_pairs;
-    mean_deserial_dec_time += deserial_dec_time/insert_pairs;
-    mean_serial_enc_time += serial_enc_time/insert_pairs;
+    mean_dec_time += dec_time;
+    mean_enc_time += enc_time;
+    mean_deserial_time += deserial_time;
+    mean_serial_time += serial_time;
 }
 
 bool client::delete_map(Bid key)
@@ -925,9 +931,9 @@ void client::Readmid1Node(midNode1 &m1, Bid bid, int leaf, int mid1L) {
                 mid1cache[mid1L].erase(bid);
             }
             mid1cache[mid1L][bid] = m1;
-            if (find(leafList1[mid1L].begin(), leafList1[mid1L].end(), leaf) == leafList1[mid1L].end()) {
-                leafList1[mid1L].push_back(leaf);
-            }
+            // if (find(leafList1[mid1L].begin(), leafList1[mid1L].end(), leaf) == leafList1[mid1L].end()) {
+                leafList1[mid1L].insert(leaf);
+            // }
         }
         
         if (m1.p2 != 0) {
@@ -960,9 +966,9 @@ void client::Readmid2Node(midNode2 &node, Bid bid, int leaf) {
                 mid2cache.erase(bid);
             }
             mid2cache[bid] = node;
-            if (find(leafList2.begin(), leafList2.end(), leaf) == leafList2.end()) {
-                leafList2.push_back(leaf);
-            }
+            // if (find(leafList2.begin(), leafList2.end(), leaf) == leafList2.end()) {
+                leafList2.insert(leaf);
+            // }
         }
         
         if (node.p2 != 0) {
@@ -991,13 +997,13 @@ void client::ReadleafNode(leafNode &node, Bid bid, int leaf) {
         
         if (node.c != 0) {
             node.pos = leaf;
-            if (leafcache.count(bid) != 0) {
-                leafcache.erase(bid);
-            }
+            // if (leafcache.count(bid) != 0) {
+            //     leafcache.erase(bid);
+            // }
             leafcache[bid] = node;
-            if (find(leafList3.begin(), leafList3.end(), leaf) == leafList3.end()) {
-                leafList3.push_back(leaf);
-            }
+            // if (find(leafList3.begin(), leafList3.end(), leaf) == leafList3.end()) {
+                leafList3.insert(leaf);
+            // }
         }
         
         if (node.c != 0) {
@@ -1127,9 +1133,9 @@ int client::Writemid1Node(bool incache, Bid bid, midNode1 &node, int mid1L) {
         
         mid1cache[mid1L][bid] = node;
         
-        if (find(leafList1[mid1L].begin(), leafList1[mid1L].end(), node.pos) == leafList1[mid1L].end()) {
-            leafList1[mid1L].push_back(node.pos);
-        }
+        // if (find(leafList1[mid1L].begin(), leafList1[mid1L].end(), node.pos) == leafList1[mid1L].end()) {
+            leafList1[mid1L].insert(node.pos);
+        // }
         
         return node.pos;
     } 
@@ -1153,9 +1159,9 @@ int client::Writemid2Node(bool incache, Bid bid, midNode2 &node) {
         
         mid2cache[bid] = node;
         
-        if (find(leafList2.begin(), leafList2.end(), node.pos) == leafList2.end()) {
-            leafList2.push_back(node.pos);
-        }
+        // if (find(leafList2.begin(), leafList2.end(), node.pos) == leafList2.end()) {
+            leafList2.insert(node.pos);
+        // }
         return node.pos;
     } else {
         mid2modified.insert(bid);
@@ -1177,9 +1183,9 @@ int client::WriteleafNode(bool incache, Bid bid, leafNode &node) {
         
         leafcache[bid] = node;
         
-        if (find(leafList3.begin(), leafList3.end(), node.pos) == leafList3.end()) {
-            leafList3.push_back(node.pos);
-        }
+        // if (find(leafList3.begin(), leafList3.end(), node.pos) == leafList3.end()) {
+            leafList3.insert(node.pos);
+        // }
         return node.pos;
     } else {
         leafmodified.insert(bid);
@@ -1218,7 +1224,7 @@ void client::Fetchmid1Path(int leaf, int mid1L)
     #if debug
     cout << "[mid1]receive mid1oram bits:" << len << std::endl;
     #endif
-    auto be = std::chrono::high_resolution_clock::now();
+    // auto be = std::chrono::high_resolution_clock::now();
     int i = 0;
     int blockSize = sizeof(midNode1);
     int clen = AES::GetCiphertextLength(blockSize*Z);
@@ -1228,17 +1234,21 @@ void client::Fetchmid1Path(int leaf, int mid1L)
         
         block ciphertext;
         ciphertext.insert(ciphertext.end(), reply.begin() + i * (clen + 16), reply.begin() + (i + 1) * (clen + 16));
+        auto be = std::chrono::high_resolution_clock::now();
         block buffer = AES::Decrypt(key1[mid1L+2], ciphertext, clen);
+        std::cout << ciphertext.size() <<" " << clen << " " << buffer.size() << "\n";
+        auto en = std::chrono::high_resolution_clock::now();
+        dec_time += en-be;
         // Bucket bucket = DeserialiseBucket<midNode1>(buffer, mid1L);
         Bucket bucket;
 
         for (int z = 0; z < Z; z++) {
             Block &block = bucket[z];
-            block.data.assign(buffer.begin(), buffer.begin() + blockSize);
+            block.data.assign(buffer.begin()+z*blockSize, buffer.begin() + (z+1)*blockSize);
             midNode1 node(mid1L);
             convertBlockToNode<midNode1>(node, block.data, mid1L);
             block.id = node.max_value;           
-            buffer.erase(buffer.begin(), buffer.begin() + blockSize);
+            // buffer.erase(buffer.begin(), buffer.begin() + blockSize);
             if(block.id != 0)
             {
                 // if (mid1cache[mid1L].count(block.id) == 0) {
@@ -1249,10 +1259,12 @@ void client::Fetchmid1Path(int leaf, int mid1L)
                 // }
             }
         }
+        auto en2 = std::chrono::high_resolution_clock::now();
+        deserial_time += en2-en;
         i++;
     }
-    auto en = std::chrono::high_resolution_clock::now();
-    deserial_dec_time += en-be;
+    // auto en = std::chrono::high_resolution_clock::now();
+    // deserial_dec_time += en-be;
 }
 
 void client::Fetchmid2Path(int leaf)
@@ -1284,7 +1296,7 @@ void client::Fetchmid2Path(int leaf)
     #if debug
     cout << "[mid2]receive mid2oram bits:" << len << std::endl;
     #endif
-    auto be = std::chrono::high_resolution_clock::now();
+    // auto be = std::chrono::high_resolution_clock::now();
     int i = 0;
     int blockSize = sizeof(midNode2);
     int clen = AES::GetCiphertextLength(blockSize*Z);
@@ -1294,17 +1306,21 @@ void client::Fetchmid2Path(int leaf)
         
         block ciphertext;
         ciphertext.insert(ciphertext.end(), reply.begin() + i * (clen + 16), reply.begin() + (i + 1) * (clen + 16));
+        auto be = std::chrono::high_resolution_clock::now();
         block buffer = AES::Decrypt(key1[1], ciphertext, clen);
+        std::cout << ciphertext.size() <<" " << clen << " " << buffer.size() << "\n";
+        auto en = std::chrono::high_resolution_clock::now();
+        dec_time += en-be;
         // Bucket bucket = DeserialiseBucket<midNode2>(buffer);
         Bucket bucket;
 
         for (int z = 0; z < Z; z++) {
             Block &block = bucket[z];
-            block.data.assign(buffer.begin(), buffer.begin() + blockSize);
+            block.data.assign(buffer.begin()+z*blockSize, buffer.begin() + (z+1)*blockSize);
             midNode2 node;
             convertBlockToNode<midNode2>(node, block.data);
             block.id = node.max_value;           
-            buffer.erase(buffer.begin(), buffer.begin() + blockSize);
+            // buffer.erase(buffer.begin(), buffer.begin() + blockSize);
             if(block.id != 0)
             {
                 // if (mid2cache.count(block.id) == 0) {
@@ -1315,10 +1331,12 @@ void client::Fetchmid2Path(int leaf)
                 // }
             }
         }
+        auto en2 = std::chrono::high_resolution_clock::now();
+        deserial_time += en2-en;
         i++;
     }
-    auto en = std::chrono::high_resolution_clock::now();
-    deserial_dec_time += en-be;
+    // auto en = std::chrono::high_resolution_clock::now();
+    // deserial_dec_time += en-be;
 }
 
 void client::FetchleafPath(int leaf)
@@ -1349,7 +1367,7 @@ void client::FetchleafPath(int leaf)
     #if debug
         cout << "[leaf]receive leaforam bits:" << len << std::endl;
     #endif
-    auto be = std::chrono::high_resolution_clock::now();
+    // auto be = std::chrono::high_resolution_clock::now();
     size_t i = 0;
     size_t blockSize = sizeof(leafNode);
     size_t clen = AES::GetCiphertextLength(blockSize*Z);
@@ -1359,19 +1377,20 @@ void client::FetchleafPath(int leaf)
         
         block ciphertext;
         ciphertext.insert(ciphertext.end(), reply.begin() + i * (clen + 16), reply.begin() + (i + 1) * (clen + 16));
-        
+        auto be = std::chrono::high_resolution_clock::now();
         block buffer = AES::Decrypt(key1[0], ciphertext, clen);
-        
+        auto en = std::chrono::high_resolution_clock::now();
+        dec_time += en- be;
         // Bucket bucket = DeserialiseBucket<leafNode>(buffer);
         Bucket bucket;
 
         for (int z = 0; z < Z; z++) {
             Block &block = bucket[z];
-            block.data.assign(buffer.begin(), buffer.begin() + blockSize);
+            block.data.assign(buffer.begin()+z*blockSize, buffer.begin() + (z+1)*blockSize);
             leafNode node;
             convertBlockToNode<leafNode>(node, block.data);
             block.id = node.max_value;           
-            buffer.erase(buffer.begin(), buffer.begin() + blockSize);
+            // buffer.erase(buffer.begin(), buffer.begin() + blockSize);
             if(block.id != 0)
             {
                 // if (leafcache.count(block.id) == 0) {
@@ -1382,10 +1401,12 @@ void client::FetchleafPath(int leaf)
                 // }
             }
         }
+        auto en2 = std::chrono::high_resolution_clock::now();
+        deserial_time += en2-en;
         i++;
     }
-    auto en = std::chrono::high_resolution_clock::now();
-    deserial_dec_time += en- be;
+    // auto en = std::chrono::high_resolution_clock::now();
+    // deserial_dec_time += en- be;
 }
 
 std::string client::Writemid1Path(int leaf, int d, int mid1L)
@@ -1394,7 +1415,7 @@ std::string client::Writemid1Path(int leaf, int d, int mid1L)
     if (find(writeviewmap1[mid1L].begin(), writeviewmap1[mid1L].end(), node) == writeviewmap1[mid1L].end()) {
 
         auto validBlocks = GetIntersectingBlocks1(leaf, d, mid1L);
-        
+        auto be0 = std::chrono::high_resolution_clock::now();
         Bucket bucket;
         for (int z = 0; z < std::min((int) validBlocks.size(), Z); z++) {
             Block &block = bucket[z];
@@ -1412,7 +1433,7 @@ std::string client::Writemid1Path(int leaf, int d, int mid1L)
         }
 
         
-        writeviewmap1[mid1L].push_back(node);
+        writeviewmap1[mid1L].insert(node);
         #if debug
         std::cout << "[mid1]plan to write bucket to store: " << node << std::endl;
         #endif
@@ -1420,7 +1441,12 @@ std::string client::Writemid1Path(int leaf, int d, int mid1L)
         block b = SerialiseBucket(bucket);
         int plaintext_size = sizeof(midNode1) * Z;
         int clen_size = AES::GetCiphertextLength(plaintext_size);
+        auto be = std::chrono::high_resolution_clock::now();
         block ciphertext = AES::Encrypt(key1[mid1L+2], b, clen_size, plaintext_size);
+        std::cout << ciphertext.size() <<" " << clen_size << " " << plaintext_size << "\n";
+        auto en = std::chrono::high_resolution_clock::now();
+        enc_time += en-be;
+        serial_time += be - be0;
         std::string buffer(ciphertext.begin(), ciphertext.end());
         return buffer;
         
@@ -1449,9 +1475,9 @@ std::string client::Writemid2Path(int leaf, int d)
     int node = GetNodeOnPath(2 * P1 * pow(P2,L-3), leaf, d);
     
     if (find(writeviewmap2.begin(), writeviewmap2.end(), node) == writeviewmap2.end()) {
-
-        auto validBlocks = GetIntersectingBlocks2(leaf, d);
         
+        auto validBlocks = GetIntersectingBlocks2(leaf, d);
+        auto be0 = std::chrono::high_resolution_clock::now();
         Bucket bucket;
         for (int z = 0; z < std::min((int) validBlocks.size(), Z); z++) {
             Block &block = bucket[z];
@@ -1469,7 +1495,7 @@ std::string client::Writemid2Path(int leaf, int d)
         }
 
         
-        writeviewmap2.push_back(node);
+        writeviewmap2.insert(node);
         #if debug
         std::cout << "[mid2]plan to write bucket to store: " << node << std::endl;
         #endif
@@ -1477,7 +1503,12 @@ std::string client::Writemid2Path(int leaf, int d)
         block b = SerialiseBucket(bucket);
         int plaintext_size = sizeof(midNode2) * Z;
         int clen_size = AES::GetCiphertextLength(plaintext_size);
+        auto be = std::chrono::high_resolution_clock::now();
         block ciphertext = AES::Encrypt(key1[1], b, clen_size, plaintext_size);
+        std::cout << ciphertext.size() <<" " << clen_size << " " << plaintext_size << "\n";
+        auto en = std::chrono::high_resolution_clock::now();
+        enc_time += en-be;
+        serial_time += be-be0;
         std::string buffer(ciphertext.begin(), ciphertext.end());
         return buffer;
         
@@ -1508,7 +1539,7 @@ std::string client::WriteleafPath(int leaf, int d)
     if (find(writeviewmap3.begin(), writeviewmap3.end(), node) == writeviewmap3.end()) {
 
         auto validBlocks = GetIntersectingBlocks3(leaf, d);
-        
+        auto be0 = std::chrono::high_resolution_clock::now();
         Bucket bucket;
         for (int z = 0; z < std::min((int) validBlocks.size(), Z); z++) {
             Block &block = bucket[z];
@@ -1527,7 +1558,7 @@ std::string client::WriteleafPath(int leaf, int d)
         }
 
         
-        writeviewmap3.push_back(node);
+        writeviewmap3.insert(node);
         #if debug
         std::cout << "[leaf]plan to write bucket to store: " << node << std::endl;
         #endif
@@ -1535,7 +1566,11 @@ std::string client::WriteleafPath(int leaf, int d)
         block b = SerialiseBucket(bucket);
         int plaintext_size = sizeof(leafNode) * Z;
         int clen_size = AES::GetCiphertextLength(plaintext_size);
+        auto be = std::chrono::high_resolution_clock::now();
         block ciphertext = AES::Encrypt(key1[0], b, clen_size, plaintext_size);
+        auto en = std::chrono::high_resolution_clock::now();
+        enc_time += en-be;
+        serial_time += be - be0;
         std::string buffer(ciphertext.begin(), ciphertext.end());
         return buffer;
         
@@ -1564,9 +1599,9 @@ void client::finalizemid1(bool find, int mid1L)
     if (find) {
         for (unsigned int i = readCntmid1[mid1L]; i < 2; i++) {
             int rnd = RandomPath(2 * P1 * pow(P2,mid1L));
-            if (std::find(leafList1[mid1L].begin(), leafList1[mid1L].end(), rnd) == leafList1[mid1L].end()) {
-                leafList1[mid1L].push_back(rnd);
-            }
+            // if (std::find(leafList1[mid1L].begin(), leafList1[mid1L].end(), rnd) == leafList1[mid1L].end()) {
+                leafList1[mid1L].insert(rnd);
+            // }
             
             Fetchmid1Path(rnd, mid1L);
         }
@@ -1574,9 +1609,9 @@ void client::finalizemid1(bool find, int mid1L)
         for (int i = readCntmid1[mid1L]; i < 2; i++) {
             int rnd = RandomPath(2 * P1 * pow(P2,mid1L));
             
-            if (std::find(leafList1[mid1L].begin(), leafList1[mid1L].end(), rnd) == leafList1[mid1L].end()) {
-                leafList1[mid1L].push_back(rnd);
-            }
+            // if (std::find(leafList1[mid1L].begin(), leafList1[mid1L].end(), rnd) == leafList1[mid1L].end()) {
+                leafList1[mid1L].insert(rnd);
+            // }
             
             Fetchmid1Path(rnd, mid1L);
         }
@@ -1588,17 +1623,17 @@ void client::finalizemid2(bool find)
     if (find) {
         for (unsigned int i = readCntmid2; i < 2; i++) {
             int rnd = RandomPath(2 * P1 * pow(P2,L-3));
-            if (std::find(leafList2.begin(), leafList2.end(), rnd) == leafList2.end()) {
-                leafList2.push_back(rnd);
-            }
+            // if (std::find(leafList2.begin(), leafList2.end(), rnd) == leafList2.end()) {
+                leafList2.insert(rnd);
+            // }
             Fetchmid2Path(rnd);
         }
     } else {
         for (int i = readCntmid2; i < 2; i++) {
             int rnd = RandomPath(2 * P1 * pow(P2,L-3));
-            if (std::find(leafList2.begin(), leafList2.end(), rnd) == leafList2.end()) {
-                leafList2.push_back(rnd);
-            }
+            // if (std::find(leafList2.begin(), leafList2.end(), rnd) == leafList2.end()) {
+                leafList2.insert(rnd);
+            // }
             Fetchmid2Path(rnd);
         }
     }
@@ -1609,17 +1644,17 @@ void client::finalizeleaf(bool find)
     if (find) {
         for (unsigned int i = readCntleaf; i < 2; i++) {
             int rnd = RandomPath(2 * P1 * pow(P2,L-2));
-            if (std::find(leafList3.begin(), leafList3.end(), rnd) == leafList3.end()) {
-                leafList3.push_back(rnd);
-            }
+            // if (std::find(leafList3.begin(), leafList3.end(), rnd) == leafList3.end()) {
+                leafList3.insert(rnd);
+            // }
             FetchleafPath(rnd);
         }
     } else {
         for (int i = readCntleaf; i < 2; i++) {
             int rnd = RandomPath(2 * P1 * pow(P2,L-2));
-            if (std::find(leafList3.begin(), leafList3.end(), rnd) == leafList3.end()) {
-                leafList3.push_back(rnd);
-            }
+            // if (std::find(leafList3.begin(), leafList3.end(), rnd) == leafList3.end()) {
+                leafList3.insert(rnd);
+            // }
             FetchleafPath(rnd);
         }
     }
@@ -1693,19 +1728,20 @@ block client::SerialiseBucket(Bucket bucket) {
 
 void client::finalize2mid1(int mid1L)
 {
-    auto be = std::chrono::high_resolution_clock::now();
+    // auto be = std::chrono::high_resolution_clock::now();
     int depth = floor(log2(2 * P1 *pow(P2,mid1L)/ Z));
     int cnt = 0;
     std::vector<std::string> buffer_vec;
     std::vector<int32_t> position_vec;
     for (int d = depth; d >= 0; d--) {
-        for (unsigned int i = 0; i < leafList1[mid1L].size(); i++) {
+        // for (unsigned int i = 0; i < leafList1[mid1L].size(); i++) {
+        for (auto &leaf: leafList1[mid1L]){
             cnt++;
             
             
             
-            std::string buffer = Writemid1Path(leafList1[mid1L][i], d, mid1L);
-            int p = GetNodeOnPath(2 * P1 *  pow(P2,mid1L), leafList1[mid1L][i], d);
+            std::string buffer = Writemid1Path(leaf, d, mid1L);
+            int p = GetNodeOnPath(2 * P1 *  pow(P2,mid1L), leaf, d);
             if(buffer != "")
             {
                 buffer_vec.push_back(buffer);
@@ -1713,8 +1749,8 @@ void client::finalize2mid1(int mid1L)
             }
         }
     }
-    auto en = std::chrono::high_resolution_clock::now();
-    serial_enc_time += en-be;
+    // auto en = std::chrono::high_resolution_clock::now();
+    // serial_enc_time += en-be;
     auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = write_bucket(buffer_vec, position_vec, mid1L+2); 
     auto end = std::chrono::high_resolution_clock::now();
@@ -1737,19 +1773,20 @@ void client::finalize2mid1(int mid1L)
 
 void client::finalize2mid2()
 {
-    auto be = std::chrono::high_resolution_clock::now();
+    // auto be = std::chrono::high_resolution_clock::now();
     int depth = floor(log2(2 * P1 * pow(P2,L-3) / Z));
     int cnt = 0;
     std::vector<std::string> buffer_vec;
     std::vector<int32_t> position_vec;
     for (int d = depth; d >= 0; d--) {
-        for (unsigned int i = 0; i < leafList2.size(); i++) {
+        // for (unsigned int i = 0; i < leafList2.size(); i++) {
+        for (auto &leaf: leafList2){
             cnt++;
             
             
             
-            std::string buffer = Writemid2Path(leafList2[i], d);
-            int p = GetNodeOnPath(2 * P1 * pow(P2,L-3), leafList2[i], d);
+            std::string buffer = Writemid2Path(leaf, d);
+            int p = GetNodeOnPath(2 * P1 * pow(P2,L-3), leaf, d);
             if(buffer != "")
             {
                 buffer_vec.push_back(buffer);
@@ -1757,8 +1794,8 @@ void client::finalize2mid2()
             }
         }
     }
-    auto en = std::chrono::high_resolution_clock::now();
-    serial_enc_time += en-be;
+    // auto en = std::chrono::high_resolution_clock::now();
+    // serial_enc_time += en-be;
     auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = write_bucket(buffer_vec, position_vec, 1);
     auto end = std::chrono::high_resolution_clock::now();
@@ -1781,19 +1818,20 @@ void client::finalize2mid2()
 
 void client::finalize2leaf()
 {
-    auto be = std::chrono::high_resolution_clock::now();
+    // auto be = std::chrono::high_resolution_clock::now();
     int depth = floor(log2(2 * P1 * pow(P2,L-2)  / Z));
     int cnt = 0;
     std::vector<std::string> buffer_vec;
     std::vector<int32_t> position_vec;
     for (int d = depth; d >= 0; d--) {
-        for (unsigned int i = 0; i < leafList3.size(); i++) {
+        // for (unsigned int i = 0; i < leafList3.size(); i++) {
+        for(auto &leaf: leafList3){
             cnt++;
             
             
             
-            std::string buffer = WriteleafPath(leafList3[i], d);
-            int p = GetNodeOnPath(2 * P1 * pow(P2,L-2), leafList3[i], d);
+            std::string buffer = WriteleafPath(leaf, d);
+            int p = GetNodeOnPath(2 * P1 * pow(P2,L-2), leaf, d);
             if(buffer != "")
             {
                 buffer_vec.push_back(buffer);
@@ -1801,8 +1839,8 @@ void client::finalize2leaf()
             }
         }
     }
-    auto en = std::chrono::high_resolution_clock::now();
-    serial_enc_time += en - be;
+    // auto en = std::chrono::high_resolution_clock::now();
+    // serial_enc_time += en - be;
     auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = write_bucket(buffer_vec, position_vec, 0);
     auto end = std::chrono::high_resolution_clock::now();
