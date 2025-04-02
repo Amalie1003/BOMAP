@@ -46,13 +46,14 @@ using namespace std;
 #define debug_randompos 0
 extern size_t write_communication_size, read_communication_size;
 extern double_t mean_write_communication_size, mean_read_communication_size;
+extern double_t pad_communication, mean_pad_communication;
 extern std::chrono::duration<double> random_path_time, mean_random_path_time;
 extern std::chrono::duration<double> deserial_time, mean_deserial_time;
 extern std::chrono::duration<double> serial_time, mean_serial_time;
 extern std::chrono::duration<double> dec_time, mean_dec_time;
 extern std::chrono::duration<double> enc_time, mean_enc_time;
 extern std::chrono::duration<double> insert_time, mean_insert_time;
-extern std::chrono::duration<double> write_communication_time, read_communication_time, mean_write_communication_time, mean_read_communication_time;
+extern std::chrono::duration<double> write_communication_time, read_communication_time, mean_write_communication_time, mean_read_communication_time, end_to_end_time;
 
 class client
 {
@@ -65,7 +66,7 @@ public:
     void insert_map(Bid key, int value);
     int search_map(Bid key);
     bool delete_map(Bid key);
-    void sendend();
+    void sendend(std::string str);
 
     size_t get_stash_size();
 

@@ -13,7 +13,7 @@
 #include <malloc.h>
 using namespace std;
 
-const int C = 8, P1 = 23, P2 = 23;
+const int C = 57, P1 = 132, P2 = 132;
 extern int L;
 extern bool is_access;
 extern int N_pairs;

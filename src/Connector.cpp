@@ -1,10 +1,10 @@
 #include "Connector.hpp"
 
-Connector::Connector(const std::string& url, int L, std::string db_name, bool is_access)
+Connector::Connector(const std::string& url, int L, std::string dbname, bool is_access)
         :inst(), uri(url), conn(uri){
 
     // mongocxx::client conn{mongocxx::uri{"mongodb://localhost:27017"}};
-    db_name = "bOMAP_" + db_name + "_" + std::to_string(L);
+    db_name = "bOMAP_" + dbname + "_" + std::to_string(L);
     if(is_access == false) conn[db_name].drop();
     coll.push_back(conn[db_name]["leaforam"]);
     coll.push_back(conn[db_name]["mid2oram"]);
@@ -26,6 +26,11 @@ Connector::Connector(const std::string& url, int L, std::string db_name, bool is
 
 Connector::~Connector()
 {
+}
+
+void Connector::drop()
+{
+    conn[db_name].drop();
 }
 
 void Connector::Insert(int oram_index, int pos, std::string cipher)

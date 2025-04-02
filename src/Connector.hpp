@@ -17,6 +17,7 @@ private:
     mongocxx::uri uri;
     mongocxx::client conn;
     std::vector<mongocxx::collection> coll;
+    std::string db_name;
 public:
     Connector(const std::string& url, int L, std::string db_name, bool id_access);
     ~Connector();
@@ -24,4 +25,5 @@ public:
     std::string Query(int oram_index, int pos);
     void Update(int oram_index, int pos, std::string cipher);
     void Bulk_Insert(int oram_index, std::vector<int> pos, std::vector<std::string> cipher);
+    void drop();
 };

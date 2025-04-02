@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named test_json
+
+# Build rule for target.
+test_json: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_json
+.PHONY : test_json
+
+# fast build rule for target.
+test_json/fast:
+	$(MAKE) -f CMakeFiles/test_json.dir/build.make CMakeFiles/test_json.dir/build
+.PHONY : test_json/fast
+
+#=============================================================================
 # Target rules for targets named test_server
 
 # Build rule for target.
@@ -419,6 +432,33 @@ test_bomap.cpp.s:
 	$(MAKE) -f CMakeFiles/test_bomap.dir/build.make CMakeFiles/test_bomap.dir/test_bomap.cpp.s
 .PHONY : test_bomap.cpp.s
 
+test_json.o: test_json.cpp.o
+
+.PHONY : test_json.o
+
+# target to build an object file
+test_json.cpp.o:
+	$(MAKE) -f CMakeFiles/test_json.dir/build.make CMakeFiles/test_json.dir/test_json.cpp.o
+.PHONY : test_json.cpp.o
+
+test_json.i: test_json.cpp.i
+
+.PHONY : test_json.i
+
+# target to preprocess a source file
+test_json.cpp.i:
+	$(MAKE) -f CMakeFiles/test_json.dir/build.make CMakeFiles/test_json.dir/test_json.cpp.i
+.PHONY : test_json.cpp.i
+
+test_json.s: test_json.cpp.s
+
+.PHONY : test_json.s
+
+# target to generate assembly for a file
+test_json.cpp.s:
+	$(MAKE) -f CMakeFiles/test_json.dir/build.make CMakeFiles/test_json.dir/test_json.cpp.s
+.PHONY : test_json.cpp.s
+
 test_server.o: test_server.cpp.o
 
 .PHONY : test_server.o
@@ -454,6 +494,7 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... test_json"
 	@echo "... test_server"
 	@echo "... test_bomap"
 	@echo "... hw_grpc_proto"
@@ -487,6 +528,9 @@ help:
 	@echo "... test_bomap.o"
 	@echo "... test_bomap.i"
 	@echo "... test_bomap.s"
+	@echo "... test_json.o"
+	@echo "... test_json.i"
+	@echo "... test_json.s"
 	@echo "... test_server.o"
 	@echo "... test_server.i"
 	@echo "... test_server.s"

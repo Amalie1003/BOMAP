@@ -1,10 +1,11 @@
 #include "client.hpp"
-int L = 3;
-int N_pairs = pow(2,10);
-int insert_pairs = N_pairs;
+int L = 5;
+int N_pairs = pow(2,30);
+int insert_pairs = 1000;
 bool is_access = false;
 size_t write_communication_size = 0, read_communication_size = 0;
 double_t mean_write_communication_size = 0, mean_read_communication_size = 0;
+double_t pad_communication = 0, mean_pad_communication = 0;
 std::chrono::duration<double> write_communication_time(0), read_communication_time(0);
 std::chrono::duration<double> random_path_time(0), mean_random_path_time(0);
 std::chrono::duration<double> deserial_time(0), mean_deserial_time(0);
@@ -12,8 +13,8 @@ std::chrono::duration<double> serial_time(0), mean_serial_time(0);
 std::chrono::duration<double> dec_time(0), mean_dec_time(0);
 std::chrono::duration<double> enc_time(0), mean_enc_time(0);
 std::chrono::duration<double> insert_time(0), mean_insert_time(0);
-
 std::chrono::duration<double> mean_write_communication_time(0), mean_read_communication_time(0);
+std::chrono::duration<double> end_to_end_time(0);
 
 client::client(int maxSize, vector<bytes<Key>> k1): rd(), mt(rd()), 
     dis(0, pow(2, floor(log2(maxSize / Z))) - 1),mid1cache(L-3),mid1modified(L-3), leafList1(L-3),
@@ -46,11 +47,24 @@ size_t client::get_stash_size()
 
 int client::search_map(Bid key)
 {
+    read_communication_size = 0;
+    write_communication_size = 0;
+    read_communication_time = std::chrono::milliseconds(0);
+    write_communication_time = std::chrono::milliseconds(0);
+    enc_time = std::chrono::milliseconds(0);
+    dec_time = std::chrono::milliseconds(0);
+    serial_time = std::chrono::milliseconds(0);
+    deserial_time = std::chrono::milliseconds(0);
+    pad_communication = 0;
+
     part_init();
     end_signal("search");
     kvpair ret;
     search(ret, key);
+    pad_communication = read_communication_size;
     finish(true);
+    pad_communication = read_communication_size - pad_communication;
+    mean_pad_communication += pad_communication/100;
     if(ret.key != 0) return ret.value;
     else return -1;
 }
@@ -75,14 +89,15 @@ void client::insert_map(Bid key, int value)
     finish(false);
 
     auto end = std::chrono::high_resolution_clock::now();
+    end_to_end_time += (end - begin)/insert_pairs;
     mean_read_communication_size += (double_t)read_communication_size/insert_pairs;
     mean_read_communication_time += read_communication_time/insert_pairs;
     mean_write_communication_size += (double_t)write_communication_size/insert_pairs;
     mean_write_communication_time += write_communication_time/insert_pairs;
-    mean_dec_time += dec_time;
-    mean_enc_time += enc_time;
-    mean_deserial_time += deserial_time;
-    mean_serial_time += serial_time;
+    mean_dec_time += dec_time/insert_pairs;
+    mean_enc_time += enc_time/insert_pairs;
+    mean_deserial_time += deserial_time/insert_pairs;
+    mean_serial_time += serial_time/insert_pairs;
 }
 
 bool client::delete_map(Bid key)
@@ -129,9 +144,9 @@ bool client::init()
     return true;
 }
 
-void client::sendend()
+void client::sendend(std::string str)
 {
-    std::string reply = end_signal("exit");
+    std::string reply = end_signal(str);
     if(reply == "ok") std::cout << "[client]send over" <<std::endl;
     else std::cout << reply << std::endl;
 }
@@ -172,10 +187,6 @@ void client::search(kvpair &kv, Bid key)
         for(int i=1;i<L-3;i++)
         {
             int m1_pos2 = m1[i-1].Search(key, m1_key[i]);
-            if (m1_pos2 > 1000)
-            {
-                std::cout << "dangerous" << std::endl;
-            }
             Readmid1Node(m1[i], m1_key[i], m1_pos2, i);
         }
         int m2_pos = m1[L-4].Search(key, m2_key);
@@ -1198,12 +1209,12 @@ void client::Fetchmid1Path(int leaf, int mid1L)
 {
     readCntmid1[mid1L]++;
     
-    
     auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = read_bucket(leaf, mid1L + 2);
     auto end = std::chrono::high_resolution_clock::now();
     read_communication_time += end - begin;
     read_communication_size += reply.length();
+    cout << "mid1:" << reply.length() << "\n";
 
     #if debug 
     std::cout << "[mid1]send and fetch mid1path:" << leaf << ", mid1L= " << mid1L << std::endl;
@@ -1236,7 +1247,7 @@ void client::Fetchmid1Path(int leaf, int mid1L)
         ciphertext.insert(ciphertext.end(), reply.begin() + i * (clen + 16), reply.begin() + (i + 1) * (clen + 16));
         auto be = std::chrono::high_resolution_clock::now();
         block buffer = AES::Decrypt(key1[mid1L+2], ciphertext, clen);
-        std::cout << ciphertext.size() <<" " << clen << " " << buffer.size() << "\n";
+        // std::cout << ciphertext.size() <<" " << clen << " " << buffer.size() << "\n";
         auto en = std::chrono::high_resolution_clock::now();
         dec_time += en-be;
         // Bucket bucket = DeserialiseBucket<midNode1>(buffer, mid1L);
@@ -1276,6 +1287,7 @@ void client::Fetchmid2Path(int leaf)
     auto end = std::chrono::high_resolution_clock::now();
     read_communication_time += end - begin;
     read_communication_size += reply.length();
+    cout << "mid2:" << reply.length() << "\n";
 
     #if debug
         cout << "[mid2]send and fetch mid2path:" << leaf << std::endl; 
@@ -1308,7 +1320,7 @@ void client::Fetchmid2Path(int leaf)
         ciphertext.insert(ciphertext.end(), reply.begin() + i * (clen + 16), reply.begin() + (i + 1) * (clen + 16));
         auto be = std::chrono::high_resolution_clock::now();
         block buffer = AES::Decrypt(key1[1], ciphertext, clen);
-        std::cout << ciphertext.size() <<" " << clen << " " << buffer.size() << "\n";
+        // std::cout << ciphertext.size() <<" " << clen << " " << buffer.size() << "\n";
         auto en = std::chrono::high_resolution_clock::now();
         dec_time += en-be;
         // Bucket bucket = DeserialiseBucket<midNode2>(buffer);
@@ -1342,12 +1354,16 @@ void client::Fetchmid2Path(int leaf)
 void client::FetchleafPath(int leaf)
 {
     readCntleaf++;
-    
+    if(readCntleaf > 2)
+    {
+        cout << "read overflow!!!";
+    }
     auto begin = std::chrono::high_resolution_clock::now();
     std::string reply = read_bucket(leaf, 0);
     auto end = std::chrono::high_resolution_clock::now();
     read_communication_time += end - begin;
     read_communication_size += reply.length();
+    cout << "leaf:" << reply.length() << "\n";
 
     #if debug
     cout << "[leaf]send and fetch leafpath:" << leaf << std::endl; 
@@ -1443,7 +1459,7 @@ std::string client::Writemid1Path(int leaf, int d, int mid1L)
         int clen_size = AES::GetCiphertextLength(plaintext_size);
         auto be = std::chrono::high_resolution_clock::now();
         block ciphertext = AES::Encrypt(key1[mid1L+2], b, clen_size, plaintext_size);
-        std::cout << ciphertext.size() <<" " << clen_size << " " << plaintext_size << "\n";
+        // std::cout << ciphertext.size() <<" " << clen_size << " " << plaintext_size << "\n";
         auto en = std::chrono::high_resolution_clock::now();
         enc_time += en-be;
         serial_time += be - be0;
@@ -1505,7 +1521,7 @@ std::string client::Writemid2Path(int leaf, int d)
         int clen_size = AES::GetCiphertextLength(plaintext_size);
         auto be = std::chrono::high_resolution_clock::now();
         block ciphertext = AES::Encrypt(key1[1], b, clen_size, plaintext_size);
-        std::cout << ciphertext.size() <<" " << clen_size << " " << plaintext_size << "\n";
+        // std::cout << ciphertext.size() <<" " << clen_size << " " << plaintext_size << "\n";
         auto en = std::chrono::high_resolution_clock::now();
         enc_time += en-be;
         serial_time += be-be0;

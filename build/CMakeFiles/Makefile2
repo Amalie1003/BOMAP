@@ -53,6 +53,7 @@ CMAKE_BINARY_DIR = /home/wrx/BOMAP/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
+all: CMakeFiles/test_json.dir/all
 all: CMakeFiles/test_server.dir/all
 all: CMakeFiles/test_bomap.dir/all
 all: CMakeFiles/hw_grpc_proto.dir/all
@@ -65,11 +66,39 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
+clean: CMakeFiles/test_json.dir/clean
 clean: CMakeFiles/test_server.dir/clean
 clean: CMakeFiles/test_bomap.dir/clean
 clean: CMakeFiles/hw_grpc_proto.dir/clean
 
 .PHONY : clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_json.dir
+
+# All Build rule for target.
+CMakeFiles/test_json.dir/all: CMakeFiles/hw_grpc_proto.dir/all
+	$(MAKE) -f CMakeFiles/test_json.dir/build.make CMakeFiles/test_json.dir/depend
+	$(MAKE) -f CMakeFiles/test_json.dir/build.make CMakeFiles/test_json.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/wrx/BOMAP/build/CMakeFiles --progress-num=14,15 "Built target test_json"
+.PHONY : CMakeFiles/test_json.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_json.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/wrx/BOMAP/build/CMakeFiles 13
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/test_json.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/wrx/BOMAP/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_json.dir/rule
+
+# Convenience name for target.
+test_json: CMakeFiles/test_json.dir/rule
+
+.PHONY : test_json
+
+# clean rule for target.
+CMakeFiles/test_json.dir/clean:
+	$(MAKE) -f CMakeFiles/test_json.dir/build.make CMakeFiles/test_json.dir/clean
+.PHONY : CMakeFiles/test_json.dir/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/test_server.dir
@@ -78,7 +107,7 @@ clean: CMakeFiles/hw_grpc_proto.dir/clean
 CMakeFiles/test_server.dir/all: CMakeFiles/hw_grpc_proto.dir/all
 	$(MAKE) -f CMakeFiles/test_server.dir/build.make CMakeFiles/test_server.dir/depend
 	$(MAKE) -f CMakeFiles/test_server.dir/build.make CMakeFiles/test_server.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/wrx/BOMAP/build/CMakeFiles --progress-num=14,15 "Built target test_server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/wrx/BOMAP/build/CMakeFiles --progress-num=16,17 "Built target test_server"
 .PHONY : CMakeFiles/test_server.dir/all
 
 # Build rule for subdir invocation for target.

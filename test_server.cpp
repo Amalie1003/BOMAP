@@ -119,9 +119,9 @@ class GreeterServiceImpl final : public bomap::Service {
     // string temp(result.begin(), result.end());
     reply->set_buffer(result);
     auto end = std::chrono::high_resolution_clock::now();
-    // if(!is_find) {
+    if(!is_find) {
         server_time += (end - begin)/insert_pairs;
-    // }
+    }
     return Status::OK;
   }
   Status write_bucket(ServerContext* context, const BucketWriteMessage* request, 
@@ -176,9 +176,9 @@ class GreeterServiceImpl final : public bomap::Service {
       }
     }
     auto end = std::chrono::high_resolution_clock::now();
-    // if(!is_find) {
+    if(!is_find) {
         server_time += (end - begin)/insert_pairs;
-    // }
+    }
     return Status::OK;
   }
   Status end_signal(ServerContext* context, const endMessage* request, 
@@ -190,8 +190,13 @@ class GreeterServiceImpl final : public bomap::Service {
     if(request->end() == "exit")
     {
       ofstream fout;
-	    fout.open("log_server.csv", ios::app);
-      fout << N_pairs << "," << L << "," << server_time.count() << std::endl;
+	    fout.open("server-03.csv", ios::app);
+      fout << N_pairs << "," << L << "," << server_time.count() << std::endl;  
+      mc->drop();
+    }
+    if(request->end() == "drop")
+    {
+      mc->drop();
     }
     // std::cout << prefix << std::endl;
     return Status::OK;
