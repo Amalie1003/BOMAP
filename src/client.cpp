@@ -1,6 +1,6 @@
 #include "client.hpp"
-int L = 5;
-int N_pairs = pow(2,30);
+int L = 3;
+int N_pairs = pow(2,10);
 int insert_pairs = 1000;
 bool is_access = false;
 size_t write_communication_size = 0, read_communication_size = 0;

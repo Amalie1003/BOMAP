@@ -1,6 +1,0 @@
-/home/wrx/BOMAP/build/CMakeFiles/rebuild_cache.dir
-/home/wrx/BOMAP/build/CMakeFiles/edit_cache.dir
-/home/wrx/BOMAP/build/CMakeFiles/test_json.dir
-/home/wrx/BOMAP/build/CMakeFiles/test_server.dir
-/home/wrx/BOMAP/build/CMakeFiles/test_bomap.dir
-/home/wrx/BOMAP/build/CMakeFiles/hw_grpc_proto.dir
